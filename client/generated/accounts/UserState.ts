@@ -3,6 +3,7 @@ import { PublicKey, Connection } from "@solana/web3.js";
 import BN from "bn.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@coral-xyz/borsh"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { PROGRAM_ID } from "../programId";
 
 export interface UserStateFields {
   bump: number;
@@ -83,15 +84,16 @@ export class UserState {
   }
 
   static async fetch(
-    program: { connection: Connection; programId: PublicKey },
-    address: PublicKey
+    c: Connection,
+    address: PublicKey,
+    programId: PublicKey = PROGRAM_ID
   ): Promise<UserState | null> {
-    const info = await program.connection.getAccountInfo(address);
+    const info = await c.getAccountInfo(address);
 
     if (info === null) {
       return null;
     }
-    if (!info.owner.equals(program.programId)) {
+    if (!info.owner.equals(programId)) {
       throw new Error("account doesn't belong to this program");
     }
 
@@ -99,16 +101,17 @@ export class UserState {
   }
 
   static async fetchMultiple(
-    program: { connection: Connection; programId: PublicKey },
-    addresses: PublicKey[]
+    c: Connection,
+    addresses: PublicKey[],
+    programId: PublicKey = PROGRAM_ID
   ): Promise<Array<UserState | null>> {
-    const infos = await program.connection.getMultipleAccountsInfo(addresses);
+    const infos = await c.getMultipleAccountsInfo(addresses);
 
     return infos.map((info) => {
       if (info === null) {
         return null;
       }
-      if (!info.owner.equals(program.programId)) {
+      if (!info.owner.equals(programId)) {
         throw new Error("account doesn't belong to this program");
       }
 

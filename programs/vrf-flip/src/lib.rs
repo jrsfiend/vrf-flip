@@ -1,12 +1,15 @@
 #![cfg_attr(debug_assertions, allow(dead_code, unused_imports, unused_variables))]
 // #[allow(unaligned_references)]
 pub mod actions;
+use std::ops::Deref;
+
 pub use actions::*;
 
 pub mod impls;
 pub use impls::*;
 
 pub mod utils;
+use solana_program::program_pack::Pack;
 pub use utils::*;
 
 pub use solana_program::program_option::COption;
@@ -15,6 +18,73 @@ pub use anchor_lang::prelude::Pubkey;
 pub use anchor_lang::prelude::*;
 pub use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 pub use anchor_spl::token::{self, Mint, SetAuthority, Token, TokenAccount, Transfer};
+#[derive(Clone)]
+pub struct m2(spl_token_2022::state::Mint);
+
+
+// You don't have to implement the "try_deserialize" function
+// from this trait. It delegates to
+// "try_deserialize_unchecked" by default which is what we want here
+// because non-anchor accounts don't have a discriminator to check
+impl anchor_lang::AccountDeserialize for m2 {
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> Result<Self> {
+       Ok( spl_token_2022::state::Mint::unpack(buf).map(m2) .unwrap())
+    }
+}
+// AccountSerialize defaults to a no-op which is what we want here
+// because it's a foreign program, so our program does not
+// have permission to write to the foreign program's accounts anyway
+impl anchor_lang::AccountSerialize for m2 {}
+
+impl anchor_lang::Owner for m2 {
+    fn owner() -> Pubkey {
+        // pub use spl_token::ID is used at the top of the file
+        ID
+    }
+}
+
+// Implement the "std::ops::Deref" trait for better user experience
+impl Deref for m2 {
+    type Target = spl_token_2022::state::Mint;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Clone)]
+pub struct ta2(spl_token_2022::state::Account);
+
+
+// You don't have to implement the "try_deserialize" function
+// from this trait. It delegates to
+// "try_deserialize_unchecked" by default which is what we want here
+// because non-anchor accounts don't have a discriminator to check
+impl anchor_lang::AccountDeserialize for ta2 {
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> Result<Self> {
+       Ok( spl_token_2022::state::Account::unpack(buf).map(ta2) .unwrap())
+    }
+}
+// AccountSerialize defaults to a no-op which is what we want here
+// because it's a foreign program, so our program does not
+// have permission to write to the foreign program's accounts anyway
+impl anchor_lang::AccountSerialize for ta2 {}
+
+impl anchor_lang::Owner for ta2 {
+    fn owner() -> Pubkey {
+        // pub use spl_token::ID is used at the top of the file
+        ID
+    }
+}
+
+// Implement the "std::ops::Deref" trait for better user experience
+impl Deref for ta2 {
+    type Target = spl_token_2022::state::Account;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 // pub use spl_token::instruction::AuthorityType;
 
 pub use switchboard_v2::{
@@ -29,7 +99,7 @@ use num_derive::*;
 
 use solana_security_txt::security_txt;
 
-declare_id!("FLiPhaxG6sdasFpRoc17u1QKq96g2p2BTNNT1rqXvcnC");
+declare_id!("7uXnX9gW2smtc5wvaeU3hBQBViRFpyD6C6D5rTb5J16E");
 
 const HOUSE_SEED: &[u8] = b"HOUSESEED";
 const USER_SEED: &[u8] = b"USERSEED";
@@ -72,7 +142,7 @@ pub mod switchboard_vrf_flip {
 }
 
 #[account(zero_copy)]
-#[derive(AnchorSerialize)]
+#[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct HouseState {
     pub bump: u8,
     // controls vault and can settle winners

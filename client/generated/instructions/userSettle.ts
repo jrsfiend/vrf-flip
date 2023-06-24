@@ -7,6 +7,7 @@ import {
 import BN from "bn.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@coral-xyz/borsh"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { PROGRAM_ID } from "../programId";
 
 export interface UserSettleArgs {
   params: types.UserSettleParamsFields;
@@ -20,14 +21,16 @@ export interface UserSettleAccounts {
   houseVault: PublicKey;
   vrf: PublicKey;
   tokenProgram: PublicKey;
+  tokenProgram2022: PublicKey;
+  mint: PublicKey;
 }
 
 export const layout = borsh.struct([types.UserSettleParams.layout("params")]);
 
 export function userSettle(
-  program: { programId: PublicKey },
   args: UserSettleArgs,
-  accounts: UserSettleAccounts
+  accounts: UserSettleAccounts,
+  programId: PublicKey = PROGRAM_ID
 ) {
   const keys: Array<AccountMeta> = [
     { pubkey: accounts.user, isSigner: false, isWritable: true },
@@ -37,6 +40,8 @@ export function userSettle(
     { pubkey: accounts.houseVault, isSigner: false, isWritable: true },
     { pubkey: accounts.vrf, isSigner: false, isWritable: false },
     { pubkey: accounts.tokenProgram, isSigner: false, isWritable: false },
+    { pubkey: accounts.tokenProgram2022, isSigner: false, isWritable: false },
+    { pubkey: accounts.mint, isSigner: false, isWritable: false },
   ];
   const identifier = Buffer.from([184, 56, 135, 64, 228, 26, 152, 183]);
   const buffer = Buffer.alloc(1000);
@@ -47,10 +52,6 @@ export function userSettle(
     buffer
   );
   const data = Buffer.concat([identifier, buffer]).slice(0, 8 + len);
-  const ix = new TransactionInstruction({
-    keys,
-    programId: program.programId,
-    data,
-  });
+  const ix = new TransactionInstruction({ keys, programId, data });
   return ix;
 }

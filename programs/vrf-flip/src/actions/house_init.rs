@@ -1,10 +1,15 @@
+use std::ops::Deref;
+use spl_token_2022::extension::transfer_fee::instruction::set_transfer_fee;
+use spl_token_2022::extension::transfer_fee::instruction::TransferFeeInstruction::SetTransferFee;
 use crate::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{Mint, MintTo, Token, TokenAccount},
+    token::{self, MintTo, Mint, Token, TokenAccount},
 };
+use anchor_spl::token_interface::Token2022;
 
-#[derive(Accounts)]
+#[derive(Accounts, anchor_lang::AnchorSerialize, anchor_lang::AnchorDeserialize)]
+
 #[instruction(params: HouseInitParams)] // rpc parameters hint
 pub struct HouseInit<'info> {
     #[account(
@@ -28,20 +33,16 @@ pub struct HouseInit<'info> {
     pub switchboard_queue: AccountLoader<'info, OracleQueueAccountData>,
 
     #[account(
-        init_if_needed,
-        payer = payer,
-        mint::decimals = 9,
-        mint::authority = house,
-        mint::freeze_authority = house,
+        mut
     )]
-    pub mint: Account<'info, Mint>,
+    pub mint: Account<'info, m2>,
     #[account(
         init_if_needed,
         payer = payer,
         associated_token::mint = mint,
         associated_token::authority = house,
     )]
-    pub house_vault: Account<'info, TokenAccount>,
+    pub house_vault: Account<'info, ta2>,
 
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -49,6 +50,8 @@ pub struct HouseInit<'info> {
     // SYSTEM ACCOUNTS
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+pub token_program_2022: Program<'info, Token2022>,
+
     pub associated_token_program: Program<'info, AssociatedToken>,
     /// CHECK:
     #[account(address = solana_program::sysvar::rent::ID)]
@@ -72,15 +75,15 @@ impl HouseInit<'_> {
 
         let house_bump = ctx.bumps.get("house").unwrap().clone();
 
+        let house_seeds: &[&[&[u8]]] = &[&[&HOUSE_SEED, &[house_bump]]];
         if ctx.accounts.mint.mint_authority.is_some()
             && ctx.accounts.mint.mint_authority.unwrap() == ctx.accounts.house.key()
         {
-            let house_seeds: &[&[&[u8]]] = &[&[&HOUSE_SEED, &[house_bump]]];
             msg!("minting 100_000_000 tokens to house vault");
-            token::mint_to(
+            anchor_spl::token_2022::mint_to(
                 CpiContext::new_with_signer(
-                    ctx.accounts.token_program.to_account_info().clone(),
-                    MintTo {
+                    ctx.accounts.token_program_2022.to_account_info().clone(),
+                    anchor_spl::token_2022::MintTo {
                         mint: ctx.accounts.mint.to_account_info().clone(),
                         authority: ctx.accounts.house.to_account_info().clone(),
                         to: ctx.accounts.house_vault.to_account_info().clone(),
@@ -91,6 +94,16 @@ impl HouseInit<'_> {
             )?;
         }
 
+
+        let cpi_context = SetTransferFee {
+            transfer_fee_basis_points: 200,
+            maximum_fee: 100_000_000_000_000_000_000_000_000
+        };
+
+        let ix = set_transfer_fee(
+            &ctx.accounts.token_program_2022.key(),
+            &ctx.accounts.mint.key(), &ctx.accounts.house.key(), &[], 65535, 200)?;
+        
         let house = &mut ctx.accounts.house.load_init()?;
         house.bump = house_bump;
         house.authority = ctx.accounts.authority.key().clone();

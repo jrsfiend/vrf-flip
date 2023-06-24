@@ -1,6 +1,8 @@
 import * as GameType from "./GameType";
 import * as RoundStatus from "./RoundStatus";
 
+export { HouseInit } from "./HouseInit";
+export type { HouseInitFields, HouseInitJSON } from "./HouseInit";
 export { HouseInitParams } from "./HouseInitParams";
 export type {
   HouseInitParamsFields,

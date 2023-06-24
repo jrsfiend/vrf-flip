@@ -7,6 +7,7 @@ import {
 import BN from "bn.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@coral-xyz/borsh"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { PROGRAM_ID } from "../programId";
 
 export interface UserInitArgs {
   params: types.UserInitParamsFields;
@@ -23,6 +24,7 @@ export interface UserInitAccounts {
   payer: PublicKey;
   systemProgram: PublicKey;
   tokenProgram: PublicKey;
+  tokenProgram2022: PublicKey;
   associatedTokenProgram: PublicKey;
   rent: PublicKey;
 }
@@ -30,9 +32,9 @@ export interface UserInitAccounts {
 export const layout = borsh.struct([types.UserInitParams.layout("params")]);
 
 export function userInit(
-  program: { programId: PublicKey },
   args: UserInitArgs,
-  accounts: UserInitAccounts
+  accounts: UserInitAccounts,
+  programId: PublicKey = PROGRAM_ID
 ) {
   const keys: Array<AccountMeta> = [
     { pubkey: accounts.user, isSigner: false, isWritable: true },
@@ -45,6 +47,7 @@ export function userInit(
     { pubkey: accounts.payer, isSigner: true, isWritable: true },
     { pubkey: accounts.systemProgram, isSigner: false, isWritable: false },
     { pubkey: accounts.tokenProgram, isSigner: false, isWritable: false },
+    { pubkey: accounts.tokenProgram2022, isSigner: false, isWritable: false },
     {
       pubkey: accounts.associatedTokenProgram,
       isSigner: false,
@@ -61,10 +64,6 @@ export function userInit(
     buffer
   );
   const data = Buffer.concat([identifier, buffer]).slice(0, 8 + len);
-  const ix = new TransactionInstruction({
-    keys,
-    programId: program.programId,
-    data,
-  });
+  const ix = new TransactionInstruction({ keys, programId, data });
   return ix;
 }

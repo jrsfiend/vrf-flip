@@ -48,7 +48,14 @@ const VRF_REQUEST_AMOUNT = 2_000_000;
 
 export const CHECK_ICON = chalk.green("\u2714");
 export const FAILED_ICON = chalk.red("\u2717");
-
+/*
+solana-keygen new --no-bip39-passphrase --outfile house-authority-keypair.json
+sbv2-vrf-flip init house-authority-keypair.json uPeRMdfPmrPqgRWSrjAnAkH78RqAhe5kXoW6vBYRqFX token.json
+solana-keygen new --no-bip39-passphrase --outfile user-keypair.json
+sbv2-vrf-flip create user-keypair.json
+sbv2-vrf-flip airdrop user-keypair.json
+sbv2-vrf-flip play user-keypair.json --gameType coin-flip --guess 2
+*/
 yargs(hideBin(process.argv))
   .scriptName("sbv2-vrf-flip")
   .command(
@@ -85,7 +92,7 @@ yargs(hideBin(process.argv))
       const mint = mintKeypair
         ? loadKeypair(mintKeypair)
         : anchor.web3.Keypair.generate();
-
+        console.log(mint.publicKey.toBase58())
       // const payerBalance = await checkNativeBalance(
       //   flipProgram.provider.connection,
       //   payer,

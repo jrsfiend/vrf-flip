@@ -17,7 +17,7 @@ import {
   TransactionOptions,
   SBV2_MAINNET_PID,
 } from "@switchboard-xyz/solana.js";
-import { HouseState } from "./generated/accounts";
+import { HouseState } from "./generated/accounts/index";
 import { House } from "./house";
 
 export class FlipProgram {
@@ -80,10 +80,8 @@ export class FlipProgram {
 
     const [houseKey] = House.fromSeeds(program.programId);
     const houseState = await HouseState.fetch(
-      {
-        connection: program.provider.connection,
-        programId: program.programId,
-      },
+    program.provider.connection,
+       
       houseKey
     );
 

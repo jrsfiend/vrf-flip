@@ -7,6 +7,7 @@ import {
 import BN from "bn.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as borsh from "@coral-xyz/borsh"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as types from "../types"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { PROGRAM_ID } from "../programId";
 
 export interface UserBetArgs {
   params: types.UserBetParamsFields;
@@ -19,9 +20,12 @@ export interface UserBetAccounts {
   authority: PublicKey;
   escrow: PublicKey;
   vrf: PublicKey;
+  /** CHECK */
   oracleQueue: PublicKey;
   queueAuthority: PublicKey;
+  /** CHECK */
   dataBuffer: PublicKey;
+  /** CHECK */
   permission: PublicKey;
   vrfEscrow: PublicKey;
   switchboardProgramState: PublicKey;
@@ -29,17 +33,19 @@ export interface UserBetAccounts {
   payer: PublicKey;
   vrfPayer: PublicKey;
   flipPayer: PublicKey;
+  mint: PublicKey;
   recentBlockhashes: PublicKey;
   systemProgram: PublicKey;
   tokenProgram: PublicKey;
+  tokenProgram2022: PublicKey;
 }
 
 export const layout = borsh.struct([types.UserBetParams.layout("params")]);
 
 export function userBet(
-  program: { programId: PublicKey },
   args: UserBetArgs,
-  accounts: UserBetAccounts
+  accounts: UserBetAccounts,
+  programId: PublicKey = PROGRAM_ID
 ) {
   const keys: Array<AccountMeta> = [
     { pubkey: accounts.user, isSigner: false, isWritable: true },
@@ -62,9 +68,11 @@ export function userBet(
     { pubkey: accounts.payer, isSigner: true, isWritable: true },
     { pubkey: accounts.vrfPayer, isSigner: false, isWritable: true },
     { pubkey: accounts.flipPayer, isSigner: false, isWritable: true },
+    { pubkey: accounts.mint, isSigner: false, isWritable: false },
     { pubkey: accounts.recentBlockhashes, isSigner: false, isWritable: false },
     { pubkey: accounts.systemProgram, isSigner: false, isWritable: false },
     { pubkey: accounts.tokenProgram, isSigner: false, isWritable: false },
+    { pubkey: accounts.tokenProgram2022, isSigner: false, isWritable: false },
   ];
   const identifier = Buffer.from([250, 141, 121, 127, 113, 52, 188, 61]);
   const buffer = Buffer.alloc(1000);
@@ -75,10 +83,6 @@ export function userBet(
     buffer
   );
   const data = Buffer.concat([identifier, buffer]).slice(0, 8 + len);
-  const ix = new TransactionInstruction({
-    keys,
-    programId: program.programId,
-    data,
-  });
+  const ix = new TransactionInstruction({ keys, programId, data });
   return ix;
 }

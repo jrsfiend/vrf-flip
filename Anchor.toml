@@ -2,16 +2,16 @@
 seeds = false
 
 [programs.localnet]
-switchboard_vrf_flip = "FLiPhaxG6sdasFpRoc17u1QKq96g2p2BTNNT1rqXvcnC"
+switchboard_vrf_flip = "7uXnX9gW2smtc5wvaeU3hBQBViRFpyD6C6D5rTb5J16E"
 
 [programs.devnet]
-switchboard_vrf_flip = "FLiPhaxG6sdasFpRoc17u1QKq96g2p2BTNNT1rqXvcnC"
+switchboard_vrf_flip = "7uXnX9gW2smtc5wvaeU3hBQBViRFpyD6C6D5rTb5J16E"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

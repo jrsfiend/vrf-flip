@@ -1,5 +1,5 @@
 use crate::*;
-use anchor_spl::token::{Mint, MintTo, Token, TokenAccount};
+use anchor_spl::{token::{Mint, MintTo, Token, TokenAccount}, token_interface::Token2022};
 const AIRDROP_AMOUNT: u64 = 1_000_000_000;
 const INITIAL_AIRDROP_AMOUNT: u64 = 10 * 1_000_000_000;
 
@@ -30,12 +30,12 @@ pub struct UserAirdrop<'info> {
         associated_token::mint = mint,
         associated_token::authority = house,
     )]
-    pub house_vault: Account<'info, TokenAccount>,
+    pub house_vault: Account<'info, ta2>,
     /// CHECK:
     #[account(
         mut,
     )]
-    pub mint: Account<'info, Mint>,
+    pub mint: Account<'info, m2>,
     /// CHECK:
     #[account(mut)]
     pub authority: AccountInfo<'info>,
@@ -45,8 +45,10 @@ pub struct UserAirdrop<'info> {
         token::mint = house.load()?.mint,
         token::authority = authority,
     )]
-    pub airdrop_token_wallet: Account<'info, TokenAccount>,
+    pub airdrop_token_wallet: Account<'info, ta2>,
     pub token_program: Program<'info, Token>,
+pub token_program_2022: Program<'info, Token2022>,
+
 }
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]

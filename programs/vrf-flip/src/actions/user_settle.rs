@@ -1,4 +1,5 @@
 use crate::*;
+use anchor_spl::token_interface::Token2022;
 pub use switchboard_v2::{VrfAccountData, VrfRequestRandomness, VrfStatus};
 
 #[derive(Accounts)]
@@ -30,20 +31,20 @@ pub struct UserSettle<'info> {
         token::mint = house.load()?.mint,
         token::authority = house,
     )]
-    pub escrow: Account<'info, TokenAccount>,
+    pub escrow: Account<'info, ta2>,
     #[account(
         mut,
         token::mint = house.load()?.mint,
         token::authority = user.load()?.authority,
     )]
-    pub reward_address: Account<'info, TokenAccount>,
+    pub reward_address: Account<'info, ta2>,
     /// CHECK:
     #[account(
         mut,
         token::mint = house.load()?.mint,
         token::authority = house,
     )]
-    pub house_vault: Account<'info, TokenAccount>,
+    pub house_vault: Account<'info, ta2>,
 
     /// CHECK:
     #[account(
@@ -52,6 +53,9 @@ pub struct UserSettle<'info> {
     )]
     pub vrf: AccountLoader<'info, VrfAccountData>,
     pub token_program: Program<'info, Token>,
+pub token_program_2022: Program<'info, Token2022>,
+
+    pub mint: Account<'info, m2>,
 }
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
@@ -75,6 +79,7 @@ impl UserSettle<'_> {
         let clock = Clock::get()?;
 
         let house = ctx.accounts.house.load()?;
+        let mint = ctx.accounts.mint.clone();
         let house_bump = house.bump.clone();
         let house_seeds: &[&[&[u8]]] = &[&[&HOUSE_SEED, &[house_bump]]];
         drop(house);
@@ -101,31 +106,39 @@ impl UserSettle<'_> {
             escrow_change = reward_amount + user.current_round.bet_amount;
             msg!("user won {} tokens!", reward_amount);
             transfer(
-                &ctx.accounts.token_program,
+                &ctx.accounts.token_program_2022,
                 &ctx.accounts.house_vault,
                 &ctx.accounts.reward_address,
                 &ctx.accounts.house.to_account_info(),
                 house_seeds,
                 reward_amount,
+                &mint,
+                mint.decimals,
             )?;
             transfer(
-                &ctx.accounts.token_program,
+                &ctx.accounts.token_program_2022,
                 &ctx.accounts.escrow,
                 &ctx.accounts.reward_address,
                 &ctx.accounts.house.to_account_info(),
                 house_seeds,
-                ctx.accounts.escrow.amount,
+                ctx.accounts.escrow.amount,  &mint,
+                
+                mint.decimals,
+
             )?;
         } else {
             escrow_change = user.current_round.bet_amount;
             msg!("whomp whomp, loser!");
             transfer(
-                &ctx.accounts.token_program,
+                &ctx.accounts.token_program_2022,
                 &ctx.accounts.escrow,
                 &ctx.accounts.house_vault,
                 &ctx.accounts.house.to_account_info(),
                 house_seeds,
                 user.current_round.bet_amount,
+                &mint,
+                
+                mint.decimals,
             )?;
         }
 

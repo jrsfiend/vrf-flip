@@ -2,7 +2,7 @@ use crate::*;
 
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{spl_token::instruction::AuthorityType, Mint, MintTo, Token, TokenAccount},
+    token::{spl_token::instruction::AuthorityType, Mint, MintTo, Token, TokenAccount}, token_interface::Token2022,
 };
 
 #[derive(Accounts)]
@@ -27,7 +27,7 @@ pub struct UserInit<'info> {
     )]
     pub house: AccountLoader<'info, HouseState>,
     #[account(mut)]
-    pub mint: Account<'info, Mint>,
+    pub mint: Account<'info, m2>,
     /// CHECK:
     #[account(mut, signer)]
     pub authority: AccountInfo<'info>,
@@ -37,14 +37,14 @@ pub struct UserInit<'info> {
         token::mint = mint,
         token::authority = authority,
     )]
-    pub escrow: Account<'info, TokenAccount>,
+    pub escrow: Account<'info, ta2>,
     #[account(
         init,
         payer = payer,
         associated_token::mint = mint,
         associated_token::authority = authority,
     )]
-    pub reward_address: Account<'info, TokenAccount>,
+    pub reward_address: Account<'info, ta2>,
     /// CHECK:
     #[account(
         mut,
@@ -60,6 +60,8 @@ pub struct UserInit<'info> {
     // system accounts
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+pub token_program_2022: Program<'info, Token2022>,
+
     pub associated_token_program: Program<'info, AssociatedToken>,
     /// CHECK:
     #[account(address = solana_program::sysvar::rent::ID)]

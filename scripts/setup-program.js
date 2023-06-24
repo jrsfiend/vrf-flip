@@ -132,6 +132,7 @@ async function main() {
     ...getAllFiles("./client/generated/instructions"),
     ...getAllFiles("./client/generated/types"),
   ]) {
+    try {
     if (file.includes("index.ts")) {
       continue;
     }
@@ -147,13 +148,22 @@ async function main() {
     //   `sed -i '' 's/import BN from \\"bn.js\\"/import { BN } from \\"@switchboard-xyz\\/common\\"/g' ${file}`
     // );
     // replace borsh import
+    try {
     execSync(`sed -i '' 's/@project-serum/@coral-xyz/g' ${file}`);
+    } catch (err){
+
+    }
+    try {
     // remove PROGRAM_ID import, we will use FlipProgram instead
     execSync(
       `sed -i '' 's/import { PROGRAM_ID } from "..\\/programId"/ /g' ${file}`
-    );
+    ); } catch (err){
+      
+    }
     // replace PROGRAM_ID with program.programId
-    execSync(`sed -i '' 's/PROGRAM_ID/program.programId/g' ${file}`);
+    try {
+    execSync(`sed -i '' 's/PROGRAM_ID/program.programId/g' ${file}`); } catch (err){
+      
     // replace Connection with FlipProgram
     execSync(
       `sed -i '' 's/c: Connection,/program: {connection: Connection;programId:PublicKey;},/g' ${file}`
@@ -167,20 +177,34 @@ async function main() {
       `sed -i '' 's/c.getMultipleAccountsInfo/program.connection.getMultipleAccountsInfo/g' ${file}`
     );
 
+  }
     // add program as first arguement to instructions
     if (file.includes("/instructions/")) {
+      try {
       execSync(
         `sed -i '' 's/args:/program: {programId:PublicKey;}, args:/g' ${file}`
       );
+      }
+       catch (err){
+
+       }
     }
+  } catch (err){
+
   }
+  }
+  try {
 
   execSync("npx prettier ./client/generated --write");
+  } 
+  catch (err){
+
+  }
 }
 
 main()
   .then(() => {
-    // console.log("Executed successfully");
+     console.log("Executed successfully");
   })
   .catch((err) => {
     console.error(err);

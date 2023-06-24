@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import * as anchor from "@coral-xyz/anchor";
 import * as spl from "@solana/spl-token";
 import {
@@ -17,8 +19,8 @@ import {
   TransactionObject,
   VrfAccount,
 } from "@switchboard-xyz/solana.js";
-import { UserState, UserStateJSON } from "./generated/accounts";
-import { userAirdrop, userBet, userInit } from "./generated/instructions";
+import { UserState, UserStateJSON } from "./generated/accounts/index";
+import { userAirdrop, userBet, userInit } from "./generated/instructions/index";
 import { House } from "./house";
 import { FlipProgram } from "./program";
 import { convertGameType, GameTypeEnum, GameTypeValue } from "./types";
@@ -68,7 +70,7 @@ export class User {
   static async load(program: FlipProgram, authority: PublicKey): Promise<User> {
     const [houseKey] = House.fromSeeds(program.programId);
     const [userKey] = User.fromSeeds(program, authority);
-    const userState = await UserState.fetch(program, userKey);
+    const userState = await UserState.fetch(program.provider.connection, userKey);
     if (!userState) {
       throw new Error(`User account does not exist`);
     }
@@ -108,7 +110,7 @@ export class User {
   }
 
   async reload(): Promise<void> {
-    const newState = await UserState.fetch(this.program, this.publicKey);
+    const newState = await UserState.fetch(this.program.provider.connection, this.publicKey);
     if (newState === null) {
       throw new Error(`Failed to fetch the new User account state`);
     }

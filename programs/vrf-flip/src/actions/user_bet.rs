@@ -1,10 +1,11 @@
 use crate::*;
-use anchor_spl::token::{Token, TokenAccount, Transfer};
+use anchor_spl::{token::{Token, TokenAccount, Transfer}, token_interface::Token2022};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 pub use switchboard_v2::{
     OracleQueueAccountData, PermissionAccountData, SbState, VrfAccountData, VrfRequestRandomness,
     SWITCHBOARD_PROGRAM_ID,
 };
+use anchor_spl::token_2022::TransferChecked;
 const VRF_REQUEST_COST: u64 = 2 * LAMPORTS_PER_SOL / 1000;
 
 #[derive(Accounts)]
@@ -109,6 +110,7 @@ pub struct UserBet<'info> {
     )]
     pub flip_payer: Box<Account<'info, TokenAccount>>,
 
+    pub mint: Account<'info, m2>,
     // SYSTEM ACCOUNTS
     /// CHECK:
     #[account(address = solana_program::sysvar::recent_blockhashes::ID)]
@@ -116,6 +118,8 @@ pub struct UserBet<'info> {
     pub system_program: Program<'info, System>,
     #[account(address = anchor_spl::token::ID)]
     pub token_program: Program<'info, Token>,
+pub token_program_2022: Program<'info, Token2022>,
+
 }
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
@@ -207,16 +211,18 @@ impl UserBet<'_> {
                 "transferring {} flip tokens to escrow",
                 escrow_transfer_amount
             );
-            token::transfer(
+            anchor_spl::token_2022::transfer_checked(
                 CpiContext::new(
-                    ctx.accounts.token_program.to_account_info().clone(),
-                    Transfer {
+                    ctx.accounts.token_program_2022.to_account_info().clone(),
+                    TransferChecked {
                         from: ctx.accounts.flip_payer.to_account_info(),
+                        mint: ctx.accounts.mint.to_account_info(),
                         to: ctx.accounts.escrow.to_account_info(),
                         authority: ctx.accounts.authority.clone(),
                     },
                 ),
                 escrow_transfer_amount,
+                9
             )?;
         }
 

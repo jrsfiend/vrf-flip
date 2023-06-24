@@ -1,10 +1,16 @@
+// @ts-nocheck
+
 import * as anchor from "@coral-xyz/anchor";
+import fs from 'fs'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  AuthorityType,
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
   createMintToInstruction,
   getMint,
+  setAuthority,
+  TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { Keypair, PublicKey, TransactionInstruction } from "@solana/web3.js";
@@ -15,8 +21,8 @@ import {
   SwitchboardProgram,
   TransactionObject,
 } from "@switchboard-xyz/solana.js";
-import { HouseState, HouseStateJSON } from "./generated/accounts";
-import { houseInit } from "./generated/instructions";
+import { HouseState, HouseStateJSON } from "./generated/accounts/index";
+import { houseInit } from "./generated/instructions/index";
 
 export class HouseAccountDoesNotExist extends Error {
   readonly name = "HouseAccountDoesNotExist";
@@ -51,10 +57,8 @@ export class House {
 
   async reload(): Promise<void> {
     const newState = await HouseState.fetch(
-      {
-        connection: this.program.provider.connection,
-        programId: this.program.programId,
-      },
+     this.program.provider.connection,
+       
       this.publicKey
     );
     if (newState === null) {
@@ -96,10 +100,8 @@ export class House {
     let retryCount = 5;
     while (retryCount) {
       const houseState = await HouseState.fetch(
-        {
-          connection: program.provider.connection,
-          programId: program.programId,
-        },
+         program.provider.connection,
+       
         houseKey
       );
       if (houseState !== null) {
@@ -127,12 +129,10 @@ export class House {
       [houseKey.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintPubkey.toBuffer()],
       ASSOCIATED_TOKEN_PROGRAM_ID
     );
-
+    
     const initHouse = houseInit(
-      {
-        programId: program.programId,
-      },
-      { params: {} },
+     
+      {  },
       {
         house: houseKey,
         authority: payer,
@@ -143,11 +143,17 @@ export class House {
         payer: payer,
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram2022: TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-      }
+      },
+      {
+        programId: program.programId
+      },
     );
 
+console.log((payer.toBase58(),mint.publicKey.toBase58(), houseKey.toBase58()))
+console.log(initHouse)
     return [new TransactionObject(payer, [initHouse], [mint]), houseKey];
   }
 
@@ -156,10 +162,7 @@ export class House {
     const [houseKey, houseBump] = House.fromSeeds(program.programId);
 
     let houseState = await HouseState.fetch(
-      {
-        connection: program.provider.connection,
-        programId: program.programId,
-      },
+      program.provider.connection,
       houseKey
     );
     if (houseState !== null) {
