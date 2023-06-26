@@ -1,87 +1,39 @@
-# Switchboard VRF Flip
+# Switchboard VRF Demo App
 
-Utilize Switchboard's verifiable randomness to simulate a heads or tails coin
-toss.
+Switchboard's VRF Demo App was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Setup
+## Available Scripts
 
-```bash
-git clone https://github.com/switchboard-xyz/vrf-flip.git && cd vrf-flip
-yarn install
-yarn link
-```
+In the project directory, you can run:
 
-Setup program keypairs and client for your environment
+### `yarn install`
 
-```bash
-yarn client:gen
-```
+Install the project dependencies.
 
-Deploy the program to devnet with your new Program ID
+### `yarn start`
 
-```bash
-anchor build && anchor deploy
-```
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-## CLI
+The page will reload if you make edits.\
+You will also see any lint errors in the console.
 
-**_NOTE:_** If using localnet, make sure to pass `-c localnet` to the commands
-below.
+### `yarn build`
 
-Create a keypair for the house authority
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-```bash
-solana-keygen new --no-bip39-passphrase --outfile house-authority-keypair.json
-```
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-Create the House account
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-```bash
-sbv2-vrf-flip init house-authority-keypair.json uPeRMdfPmrPqgRWSrjAnAkH78RqAhe5kXoW6vBYRqFX
-# sbv2-vrf-flip init KEYPAIR QUEUEKEY
-```
+### `yarn eject`
 
-**_NOTE:_** The House must be initialized with a queue that has
-`unpermissioned_vrf_enabled` enabled.
+**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 
-Create a keypair for the user
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-```bash
-solana-keygen new --no-bip39-passphrase --outfile user-keypair.json
-```
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-Create the User account
-
-```bash
-sbv2-vrf-flip create user-keypair.json
-```
-
-Request some FLIP tokens
-
-```bash
-sbv2-vrf-flip airdrop user-keypair.json
-```
-
-PLAY!
-
-```bash
-sbv2-vrf-flip play user-keypair.json --gameType coin-flip --guess 2
-```
-
-where,
-
-- `gameType` can be `coin-flip`, `roll-dice`, `roll-20-sided-dice`.
-- `guess` can be 1 through 2 for a `coin-flip`, 1 through 6 for `dice-roll`, and
-  1 through 20 for a `roll-20-sided-dice`
-- `betAmount` is the number of tokens to wager
-
-## Speed Run
-
-```bash
-solana-keygen new --no-bip39-passphrase --outfile house-authority-keypair.json
-sbv2-vrf-flip init house-authority-keypair.json uPeRMdfPmrPqgRWSrjAnAkH78RqAhe5kXoW6vBYRqFX
-solana-keygen new --no-bip39-passphrase --outfile user-keypair.json
-sbv2-vrf-flip create user-keypair.json
-sbv2-vrf-flip airdrop user-keypair.json
-sbv2-vrf-flip play user-keypair.json --gameType coin-flip --guess 2
-```
+You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
