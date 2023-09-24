@@ -17,7 +17,7 @@ pub struct UserInit<'info> {
     pub user: AccountLoader<'info, UserState>,
 
     #[account(
-        seeds = [HOUSE_SEED],
+        seeds = [HOUSE_SEED, escrow.mint.key().as_ref()],
         bump = house.load()?.bump,
         has_one = mint,
         has_one = switchboard_function,
@@ -146,7 +146,8 @@ impl UserInit<'_> {
       
         let house_key = ctx.accounts.house.key();
         let house_bump = ctx.accounts.house.load()?.bump;
-        let house_seeds: &[&[&[u8]]] = &[&[HOUSE_SEED, &[house_bump]]];
+        let mint = ctx.accounts.mint.key();
+        let house_seeds: &[&[&[u8]]] = &[&[HOUSE_SEED, mint.as_ref(),  &[house_bump]]];    
 
         msg!("setting user escrow authority to the house");
         token::set_authority(

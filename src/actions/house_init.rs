@@ -7,7 +7,7 @@ pub struct HouseInit<'info> {
         init,
         space = 8 + std::mem::size_of::<HouseState>(),
         payer = payer,
-        seeds = [HOUSE_SEED],
+        seeds = [HOUSE_SEED, mint.key().as_ref()],
         bump
     )]
     pub house: AccountLoader<'info, HouseState>,
@@ -65,11 +65,11 @@ impl HouseInit<'_> {
         msg!("house_init");
 
         let house_bump = *ctx.bumps.get("house").unwrap();
-
+        let mint = &ctx.accounts.mint.key();
         if ctx.accounts.mint.mint_authority.is_some()
             && ctx.accounts.mint.mint_authority.unwrap() == ctx.accounts.house.key()
         {
-            let house_seeds: &[&[&[u8]]] = &[&[HOUSE_SEED, &[house_bump]]];
+            let house_seeds: &[&[&[u8]]] = &[&[HOUSE_SEED, mint.as_ref(), &[house_bump]]];
             msg!("minting 100_000_000 tokens to house vault");
             token::mint_to(
                 CpiContext::new_with_signer(

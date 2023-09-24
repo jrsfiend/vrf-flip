@@ -18,7 +18,7 @@ pub struct UserBet<'info> {
     pub user: AccountLoader<'info, UserState>,
 
     #[account(
-        seeds = [HOUSE_SEED],
+        seeds = [HOUSE_SEED, escrow.mint.key().as_ref()],
         bump = house.load()?.bump,
         has_one = house_vault,
         has_one = switchboard_function,

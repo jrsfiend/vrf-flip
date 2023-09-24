@@ -23,7 +23,7 @@ async fn main() {
 
     // derive pubkeys to build ixn
     let (house_pubkey, _house_bump) =
-        Pubkey::find_program_address(&[b"HOUSESEED"], &params.program_id);
+        Pubkey::find_program_address(&[b"HOUSESEED", &params.mint_key.to_bytes()[..]], &params.program_id);
     let house_vault =
         anchor_spl::associated_token::get_associated_token_address(&house_pubkey, &params.mint_key);
 
@@ -37,6 +37,7 @@ async fn main() {
         accounts: vec![
             AccountMeta::new(params.user_key, false),
             AccountMeta::new_readonly(house_pubkey, false),
+            AccountMeta::new(params.mint_key, false),
             AccountMeta::new(params.escrow_key, false),
             AccountMeta::new(params.reward_key, false),
             AccountMeta::new(house_vault, false),

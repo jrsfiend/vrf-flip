@@ -19,13 +19,16 @@ pub struct UserSettle<'info> {
     pub user: AccountLoader<'info, UserState>,
 
     #[account(
-        seeds = [HOUSE_SEED],
+        seeds = [HOUSE_SEED, escrow.mint.key().as_ref()],
         bump = house.load()?.bump,
         has_one = house_vault,
         has_one = switchboard_function,
     )]
     pub house: AccountLoader<'info, HouseState>,
 
+
+    #[account(mut)]
+    pub mint: Account<'info, Mint>,
     /// CHECK:
     #[account(
         mut,
@@ -88,7 +91,9 @@ impl UserSettle<'_> {
 
         let house = ctx.accounts.house.load()?;
         let house_bump = house.bump.clone();
-        let house_seeds: &[&[&[u8]]] = &[&[&HOUSE_SEED, &[house_bump]]];
+        
+        let mint = ctx.accounts.mint.key();
+        let house_seeds: &[&[&[u8]]] = &[&[HOUSE_SEED, mint.as_ref(),  &[house_bump]]];    
         drop(house);
 
         let mut user = ctx.accounts.user.load_mut()?;

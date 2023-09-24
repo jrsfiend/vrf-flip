@@ -65,7 +65,8 @@ const MrEnclave: Uint8Array | undefined = process.env.MR_ENCLAVE
   const switchboardProgram = await SwitchboardProgram.fromProvider(provider);
 
   const [housePubkey] = PublicKey.findProgramAddressSync(
-    [Buffer.from("HOUSESEED")],
+    [Buffer.from("HOUSESEED"), 
+    mintKeypair.publicKey.toBytes()],
     program.programId
   );
   console.log(`HOUSE: ${housePubkey}`);

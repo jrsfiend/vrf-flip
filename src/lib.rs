@@ -24,7 +24,7 @@ use num_derive::*;
 
 use solana_security_txt::security_txt;
 
-declare_id!("HC7vQXUpCX2pVwcpTBDnxQQyqzeiHu6u1K16A3gTyoux");
+declare_id!("Fm7vccpjxx3nb5C4E65Vf68zkbyG3BnWvr4dFNetWNSr");
 
 const HOUSE_SEED: &[u8] = b"HOUSESEED";
 const USER_SEED: &[u8] = b"USERSEEDV1";
@@ -61,6 +61,13 @@ pub mod switchboard_vrf_flip {
         UserSettle::actuate(&ctx, &params)
     }
 
+    #[access_control(ctx.accounts.validate(&ctx, &params))]
+    pub fn user_withdraw(
+        ctx: Context<UserWithdraw>,
+        params:UserWithdrawParams,
+    ) -> anchor_lang::Result<()> {
+        UserWithdraw::actuate(&ctx, &params)
+    }
     #[access_control(ctx.accounts.validate(&ctx, &params))]
     pub fn user_airdrop(
         ctx: Context<UserAirdrop>,
@@ -190,6 +197,7 @@ pub struct UserState {
     pub last_airdrop_request_slot: u64,
     pub _ebuf: [u8; 1024],
     pub history: History,
+    pub deposited: u64,
 }
 impl Default for UserState {
     fn default() -> Self {

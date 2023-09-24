@@ -4,8 +4,8 @@ const AIRDROP_AMOUNT: u64 = 1_000_000_000;
 const INITIAL_AIRDROP_AMOUNT: u64 = 10 * 1_000_000_000;
 
 #[derive(Accounts)]
-#[instruction(params: UserAirdropParams)] // rpc parameters hint
-pub struct UserAirdrop<'info> {
+#[instruction(params: UserWithdrawParams)] // rpc parameters hint
+pub struct UserWithdraw<'info> {
     #[account(
         mut,
         seeds = [
@@ -50,22 +50,26 @@ pub struct UserAirdrop<'info> {
 }
 
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
-pub struct UserAirdropParams {
+pub struct UserWithdrawParams {
     pub amount: u64,
 }
 
-impl UserAirdrop<'_> {
+impl UserWithdraw<'_> {
     pub fn validate(
         &self,
         ctx: &Context<Self>,
-        _params: &UserAirdropParams,
+        params: &UserWithdrawParams,
     ) -> anchor_lang::Result<()> {
-       
+       let user = ctx.accounts.user.load()?;
+       if user.deposited < params.amount {
+        return Err(error!(VrfFlipError::InvalidBet));
+
+    }
         Ok(())
     }
 
-    pub fn actuate(ctx: &Context<Self>, params: &UserAirdropParams) -> anchor_lang::Result<()> {
-        msg!("user_deposit");
+    pub fn actuate(ctx: &Context<Self>, params: &UserWithdrawParams) -> anchor_lang::Result<()> {
+        msg!("user_withdraw");
 
         let house = ctx.accounts.house.load()?;
         let house_bump = house.bump.clone();
@@ -81,15 +85,15 @@ impl UserAirdrop<'_> {
         // deposit to house_vault 
 
         transfer(
-            &ctx.accounts.token_program, 
-            &ctx.accounts.airdrop_token_wallet, 
+            &ctx.accounts.token_program,
             &ctx.accounts.house_vault,
-            &ctx.accounts.authority.to_account_info(), 
-            &[], 
-            params.amount
+            &ctx.accounts.airdrop_token_wallet,
+            &ctx.accounts.house.to_account_info(),
+            house_seeds,
+            user.current_round.bet_amount,
         )?;
 
-        user.deposited += params.amount;
+        user.deposited -= params.amount;
 
         Ok(())
     }

@@ -5,10 +5,10 @@ members = ["."]
 seeds = false
 
 [programs.localnet]
-switchboard_vrf_flip = "HC7vQXUpCX2pVwcpTBDnxQQyqzeiHu6u1K16A3gTyoux"
+switchboard_vrf_flip = "Fm7vccpjxx3nb5C4E65Vf68zkbyG3BnWvr4dFNetWNSr"
 
 [programs.devnet]
-switchboard_vrf_flip = "HC7vQXUpCX2pVwcpTBDnxQQyqzeiHu6u1K16A3gTyoux"
+switchboard_vrf_flip = "Fm7vccpjxx3nb5C4E65Vf68zkbyG3BnWvr4dFNetWNSr"
 
 [registry]
 url = "https://anchor.projectserum.com"
